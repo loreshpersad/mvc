@@ -11,20 +11,31 @@ namespace mvc.Models
 {
     using System;
     using System.Collections.Generic;
-    
+    using System.ComponentModel.DataAnnotations;
+
     public partial class UserAddress
     {
         public int Id { get; set; }
+        [Required]
         public string Address { get; set; }
+        [Required]
         public string City { get; set; }
+        [Required]
         public string State { get; set; }
+        [Required]
         public string Zip { get; set; }
+        [Required]
         public string UserName { get; set; }
 
 
         public UserAddress(string userName)
         {
             this.UserName = userName;
+            this.City = "";
+            this.State = "";
+            this.Zip = "";
+            this.Address = "";
+
 
         }
 

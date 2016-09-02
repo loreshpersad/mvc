@@ -15,6 +15,7 @@ namespace mvc.Controllers
     [Authorize]
     public class AccountController : Controller
     {
+        private Entities db = new Entities();
         public AccountController()
             : this(new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext())))
         {
@@ -83,6 +84,9 @@ namespace mvc.Controllers
                 if (result.Succeeded)
                 {
                     await SignInAsync(user, isPersistent: false);
+                    //add blank address row
+                    db.UserAddresses.Add(new UserAddress(model.UserName));
+                    db.SaveChanges();
                     return RedirectToAction("Index", "Home");
                 }
                 else
