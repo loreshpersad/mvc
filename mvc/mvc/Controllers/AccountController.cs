@@ -50,7 +50,7 @@ namespace mvc.Controllers
                 if (user != null)
                 {
                     await SignInAsync(user, model.RememberMe);
-                    return RedirectToLocal(returnUrl);
+                    return RedirectToAction("Index", "UserInfo");
                 }
                 else
                 {
@@ -80,18 +80,21 @@ namespace mvc.Controllers
             if (ModelState.IsValid)
             {
                 var user = new ApplicationUser() { UserName = model.UserName };
-                var result = await UserManager.CreateAsync(user, model.Password);
-                if (result.Succeeded)
-                {
-                    await SignInAsync(user, isPersistent: false);
-                    //add blank address row
-                    db.UserAddresses.Add(new UserAddress(model.UserName));
-                    db.SaveChanges();
-                    return RedirectToAction("Index", "Home");
+                if (db.AspNetUsers.Where(z => z.UserName.ToLower() == model.UserName.ToLower()).ToList().Count() == 0){
+                    var result = await UserManager.CreateAsync(user, model.Password);
+                    if (result.Succeeded)
+                    {
+                        await SignInAsync(user, isPersistent: false);
+                        return RedirectToAction("Index", "UserInfo");
+                    }
+                    else
+                    {
+                        AddErrors(result);
+                    }
                 }
                 else
                 {
-                    AddErrors(result);
+                    ModelState.AddModelError("", "Username already exist");
                 }
             }
 

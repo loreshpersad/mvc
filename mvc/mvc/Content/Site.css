@@ -16,6 +16,14 @@ textarea {
     max-width: 280px;
 }
 
+.imgMenu{
+    width:300px;
+    height:150px;
+}
+
+.imgCarousel{
+    width : 1200px;
+}
 /* styles for validation helpers */
 .field-validation-error {
     color: #b94a48;

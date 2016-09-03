@@ -11,6 +11,7 @@ using Microsoft.AspNet.Identity;
 
 namespace mvc.Controllers
 {
+    [Authorize]
     public class UserInfoController : Controller
     {
         private Entities db = new Entities();
@@ -18,11 +19,26 @@ namespace mvc.Controllers
         // GET: UserInfo
         public ActionResult Index()
         {
-            //var users = (from user in db.AspNetUsers
-            //             join addr in db.UserAddresses 
-            //             on user.UserName equals addr.UserName into ua
-            //             from userAddr in ua.DefaultIfEmpty()
-            return View(db.UserAddresses.ToList());
+            //var users = from userVal in db.AspNetUsers
+            //             join addr in db.UserAddresses
+            //             on userVal.UserName equals addr.UserName into a
+            //             from b in a.DefaultIfEmpty(new UserAddress())
+            //             select {  };
+
+            var allUsers = (from c in db.AspNetUsers
+                    join o in db.UserAddresses on c.UserName equals o.UserName into t
+                    from a in t.DefaultIfEmpty()
+                    select new
+                    {
+                        UserName = c.UserName,
+                        Id = c.Id,
+                        Address = a.Address,
+                        City = a.City,
+                        State = a.State,
+                        Zip = a.Zip
+                    }).ToList();
+            allUsers.GroupBy(z => z.UserName).Select(u => u.First());
+            return View(allUsers.Select(z => new UserAddress(z.UserName, z.Address, z.City, z.State, z.Zip, z.Id)).ToList());
         }
         
     
@@ -30,13 +46,15 @@ namespace mvc.Controllers
         public ActionResult Edit()
         {
             string userName = User.Identity.GetUserName();
+            string userId = User.Identity.GetUserId();
 
-            UserAddress userAddress = db.UserAddresses.Where(z => z.UserName == userName).FirstOrDefault(); 
+            UserAddress userAddress = db.UserAddresses.Where(z => z.UserName == userName).FirstOrDefault();
 
             if (userAddress == null)
             {
-                return View(new UserAddress(userName));
+                return View(new UserAddress(userName,string.Empty, string.Empty, string.Empty, string.Empty,userId));
             }
+            else { userAddress.userId = userId; }
             return View(userAddress);
         }
 
@@ -45,10 +63,8 @@ namespace mvc.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Id,Address,City,State,Zip,UserName")] UserAddress userAddress)
+        public ActionResult Edit([Bind(Include = "Id,Address,City,State,Zip,UserName,UserId")] UserAddress userAddress)
         {
-            string userName = User.Identity.GetUserName();
-            userAddress.UserName = userName;
 
             if (ModelState.IsValid)
             {
@@ -68,24 +84,37 @@ namespace mvc.Controllers
         }
 
         // GET: UserInfo/Delete/5
-        public ActionResult Delete(int? id)
+        public ActionResult Delete(string userId)
         {
-
             string userName = User.Identity.GetUserName();
-            if (id == null)
+
+            if (String.IsNullOrEmpty(userId))
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            UserAddress userAddress = db.UserAddresses.Find(id);
-            if (userAddress == null)
+
+            AspNetUser us = db.AspNetUsers.Find(userId);
+
+            if (us == null)
             {
                 return HttpNotFound();
             }
 
-            if (userName == userAddress.UserName)
+            if (userName == us.UserName)
             {
                 TempData["error"] = "You cannot delete yourself";
                 return RedirectToAction("Index");
+            }
+            
+            UserAddress userAddress = db.UserAddresses.Where(z => z.UserName == us.UserName).FirstOrDefault();
+            
+            if(userAddress == null)
+            {
+                return View(new UserAddress(us.UserName, string.Empty, string.Empty,string.Empty,string.Empty, userId));
+            }
+            else
+            {
+                userAddress.userId = userId;
             }
 
             return View(userAddress);
@@ -94,10 +123,17 @@ namespace mvc.Controllers
         // POST: UserInfo/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public ActionResult DeleteConfirmed(int id)
+        public ActionResult DeleteConfirmed(string userId)
         {
-            UserAddress userAddress = db.UserAddresses.Find(id);
-            db.UserAddresses.Remove(userAddress);
+            AspNetUser us = db.AspNetUsers.Find(userId);
+            UserAddress userAddress = db.UserAddresses.Where(z => z.UserName == us.UserName).FirstOrDefault();
+            db.AspNetUsers.Remove(us);
+
+            if(userAddress != null)
+            {
+                db.UserAddresses.Remove(userAddress);
+            }
+
             db.SaveChanges();
             return RedirectToAction("Index");
         }

@@ -198,6 +198,10 @@
   <ItemGroup>
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
+    <Content Include="Content\Images\93aac9090a0d028a001c66008959d431.jpg" />
+    <Content Include="Content\Images\Favim.com-627419.jpg" />
+    <Content Include="Content\Images\porsche718-boxster-web-ac-028-900x500.jpg" />
+    <Content Include="Content\Images\Venom-GT-Logo-633x340.jpg" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />

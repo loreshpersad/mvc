@@ -27,16 +27,22 @@ namespace mvc.Models
         [Required]
         public string UserName { get; set; }
 
+        public string userId { get; set; }
 
         public UserAddress(string userName)
         {
             this.UserName = userName;
-            this.City = "";
-            this.State = "";
-            this.Zip = "";
-            this.Address = "";
 
-
+        }
+        
+        public UserAddress(string userName, string addr, string city, string state, string zip , string id)
+        {
+            this.UserName = userName;
+            this.Address = addr;
+            this.City = city;
+            this.State = state;
+            this.Zip = zip;
+            this.userId = id;
         }
 
         public UserAddress() { }
